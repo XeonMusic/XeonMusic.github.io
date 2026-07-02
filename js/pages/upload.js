@@ -5,9 +5,9 @@
  */
 class UploadPage {
   constructor(app) {
-    this.app       = app;
-    this.api       = app.api;
-    this.auth      = app.auth;
+    this.app = app;
+    this.api = app.api;
+    this.auth = app.auth;
     this.coverFile = null;
     this.audioFile = null;
   }
@@ -158,20 +158,20 @@ class UploadPage {
       const file = e.target.files?.[0];
       if (!file) return;
       this.coverFile = file;
-      const img     = document.getElementById('cover-preview-img');
-      const ph      = document.getElementById('cover-placeholder');
-      const reader  = new FileReader();
+      const img = document.getElementById('cover-preview-img');
+      const ph = document.getElementById('cover-placeholder');
+      const reader = new FileReader();
       reader.onload = (ev) => {
         if (img) { img.src = ev.target.result; img.style.display = 'block'; }
-        if (ph)    ph.style.display = 'none';
+        if (ph) ph.style.display = 'none';
       };
       reader.readAsDataURL(file);
     });
 
     // Audio file selection
-    const audioInput  = document.getElementById('audio-input');
+    const audioInput = document.getElementById('audio-input');
     const audioDropEl = document.getElementById('audio-drop-zone');
-    const audioText   = document.getElementById('audio-drop-text');
+    const audioText = document.getElementById('audio-drop-text');
 
     const setAudioFile = (file) => {
       if (!file || !file.type.startsWith('audio/')) {
@@ -196,8 +196,8 @@ class UploadPage {
 
     // Drag & Drop
     if (audioDropEl) {
-      audioDropEl.addEventListener('dragover',  (e) => { e.preventDefault(); audioDropEl.classList.add('dragover'); });
-      audioDropEl.addEventListener('dragleave', ()  => { if (!this.audioFile) audioDropEl.classList.remove('dragover'); });
+      audioDropEl.addEventListener('dragover', (e) => { e.preventDefault(); audioDropEl.classList.add('dragover'); });
+      audioDropEl.addEventListener('dragleave', () => { if (!this.audioFile) audioDropEl.classList.remove('dragover'); });
       audioDropEl.addEventListener('drop', (e) => {
         e.preventDefault();
         setAudioFile(e.dataTransfer.files?.[0]);
@@ -216,9 +216,9 @@ class UploadPage {
       this.audioFile = null;
       document.getElementById('upload-form')?.reset();
       const img = document.getElementById('cover-preview-img');
-      const ph  = document.getElementById('cover-placeholder');
+      const ph = document.getElementById('cover-placeholder');
       if (img) { img.src = ''; img.style.display = 'none'; }
-      if (ph)  ph.style.display = 'flex';
+      if (ph) ph.style.display = 'flex';
       audioDropEl?.classList.remove('dragover');
       if (audioText) audioText.innerHTML = `<strong>Klik atau drag & drop</strong> file audio<br><small>MP3, WAV — Maks. 50MB</small>`;
       document.getElementById('upload-error')?.classList.add('hidden');
@@ -231,15 +231,15 @@ class UploadPage {
   // ══════════════════════════════════════════
 
   async _handleSubmit() {
-    const title  = document.getElementById('upload-title')?.value.trim();
+    const title = document.getElementById('upload-title')?.value.trim();
     const artist = document.getElementById('upload-artist')?.value.trim();
-    const album  = document.getElementById('upload-album')?.value.trim();
-    const genre  = document.getElementById('upload-genre')?.value;
+    const album = document.getElementById('upload-album')?.value.trim();
+    const genre = document.getElementById('upload-genre')?.value;
 
     // Validation
-    if (!title)           return this._showError('Judul lagu wajib diisi.');
-    if (!artist)          return this._showError('Nama artis wajib diisi.');
-    if (!this.audioFile)  return this._showError('Pilih file audio terlebih dahulu.');
+    if (!title) return this._showError('Judul lagu wajib diisi.');
+    if (!artist) return this._showError('Nama artis wajib diisi.');
+    if (!this.audioFile) return this._showError('Pilih file audio terlebih dahulu.');
 
     this._clearError();
     this._setLoading(true);
@@ -252,24 +252,36 @@ class UploadPage {
       if (this.coverFile) {
         this._setProgress(30, 'Memproses thumbnail...');
         coverBase64 = await Utils.fileToBase64(this.coverFile);
-        coverMime   = this.coverFile.type;
-        coverName   = this.coverFile.name;
+        coverMime = this.coverFile.type;
+        coverName = this.coverFile.name;
       }
 
-      this._setProgress(55, 'Mengupload ke Google Drive...');
+      this._setProgress(55, 'Memulai upload');
+
+      // Simulasi progress karena Google Apps Script CORS tidak mendukung XMLHttpRequest upload progress
+      let simPercent = 55;
+      const simInterval = setInterval(() => {
+        if (simPercent < 95) {
+          simPercent += Math.floor(Math.random() * 5) + 1;
+          if (simPercent > 95) simPercent = 95;
+          this._setProgress(simPercent, `Mengupload... ${simPercent}%`);
+        }
+      }, 500);
 
       const user = this.auth.getUser();
-      const res  = await this.api.uploadSong({
+      const res = await this.api.uploadSong({
         title, artist, album, genre,
-        userId:      user.id,
-        token:       this.auth.getToken(),
+        userId: user.id,
+        token: this.auth.getToken(),
         audioBase64,
-        audioMime:   this.audioFile.type,
-        audioName:   this.audioFile.name,
+        audioMime: this.audioFile.type,
+        audioName: this.audioFile.name,
         coverBase64,
         coverMime,
         coverName,
       });
+
+      clearInterval(simInterval);
 
       if (res.success) {
         this._setProgress(100, '✅ Upload berhasil!');
@@ -293,8 +305,8 @@ class UploadPage {
   // ══════════════════════════════════════════
 
   _setLoading(loading) {
-    const btn     = document.getElementById('upload-submit');
-    const text    = btn?.querySelector('.btn-text');
+    const btn = document.getElementById('upload-submit');
+    const text = btn?.querySelector('.btn-text');
     const spinner = btn?.querySelector('.btn-spinner');
     if (!btn) return;
     btn.disabled = loading;
@@ -304,10 +316,10 @@ class UploadPage {
   }
 
   _setProgress(pct, text) {
-    const fill  = document.getElementById('upload-progress-fill');
+    const fill = document.getElementById('upload-progress-fill');
     const label = document.getElementById('upload-progress-text');
-    if (fill)  fill.style.width   = `${pct}%`;
-    if (label) label.textContent  = text;
+    if (fill) fill.style.width = `${pct}%`;
+    if (label) label.textContent = text;
   }
 
   _showError(msg) {

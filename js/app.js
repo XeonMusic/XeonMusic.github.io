@@ -11,7 +11,7 @@
 // ════════════════════════════════════════════
 //  CONFIGURATION
 // ════════════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzM92w47bfgaJNUnYec7nKeXnrIxCvIK2UlV2HPS0HoJZrWRx3MKemPe4nSdtGuObCb/exec'
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwyrcI_X6gcj1Bue3KGRLjR56FuW1sYSE57MoYNLRRVS1cZncdzbXyjtdvXlPX051eW/exec'
 
 // ════════════════════════════════════════════
 //  MAIN APP CLASS

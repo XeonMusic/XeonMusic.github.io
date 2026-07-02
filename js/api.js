@@ -63,7 +63,6 @@ class XeonAPI {
       throw e;
     }
   }
-
   _mockError(msg) {
     console.warn('[XeonAPI]', msg);
     return { success: false, message: msg, data: [] };
