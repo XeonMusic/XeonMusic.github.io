@@ -1,0 +1,362 @@
+/* ================================================
+   XEONMUSIC — MAIN.CSS
+   Design System: Variables, Reset, Typography, Layout
+   Developer: AlfandoXeon
+   ================================================ */
+
+/* ---- Google Fonts loaded via HTML ---- */
+
+/* ============================================
+   CSS CUSTOM PROPERTIES (Design Tokens)
+   ============================================ */
+:root {
+  /* Core Colors */
+  --color-bg:           #080616;
+  --color-surface:      #12102A;
+  --color-surface-2:    #1A1838;
+  --color-surface-3:    #22203F;
+  --color-surface-4:    #2A2750;
+
+  /* Accent — Merah Xeon */
+  --color-accent:       #E41629;
+  --color-accent-2:     #931A1A;
+  --color-accent-3:     #C0121F;
+  --color-accent-glow:  rgba(228, 22, 41, 0.18);
+  --color-accent-glow2: rgba(228, 22, 41, 0.30);
+
+  /* Text */
+  --color-text:         #F0EEF8;
+  --color-text-muted:   #8B8BA8;
+  --color-text-faint:   #5A5A78;
+
+  /* Borders */
+  --color-border:       #2A2750;
+  --color-border-light: #3A3660;
+  --color-border-glow:  rgba(228, 22, 41, 0.35);
+
+  /* Typography */
+  --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Spacing Scale */
+  --sp-xs:  4px;
+  --sp-sm:  8px;
+  --sp-md:  16px;
+  --sp-lg:  24px;
+  --sp-xl:  32px;
+  --sp-2xl: 48px;
+  --sp-3xl: 64px;
+  --sp-4xl: 80px;
+
+  /* Border Radius */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --t-fast:  0.15s ease;
+  --t-mid:   0.25s ease;
+  --t-slow:  0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadows */
+  --shadow-sm:     0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md:     0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg:     0 16px 48px rgba(0, 0, 0, 0.55);
+  --shadow-accent: 0 8px 28px rgba(228, 22, 41, 0.35);
+  --shadow-glow:   0 0 40px rgba(228, 22, 41, 0.2);
+
+  /* Layout */
+  --navbar-h:    68px;
+  --player-h:    88px;
+  --content-max: 1500px;
+  --content-pad: clamp(16px, 4vw, 56px);
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  font-size: 15px;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(147, 26, 26, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(42, 39, 80, 0.5) 0%, transparent 60%);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-main);
+  border: none;
+  background: none;
+  color: inherit;
+  line-height: 1;
+}
+
+input, textarea, select {
+  font-family: var(--font-main);
+  font-size: inherit;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+h1, h2, h3, h4 { line-height: 1.25; }
+
+/* ============================================
+   APP LAYOUT
+   ============================================ */
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--navbar-h);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  padding: 0 var(--content-pad);
+  background: rgba(8, 6, 22, 0.88);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 24px rgba(0,0,0,0.3);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+.navbar-brand:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.logo-text {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--color-text);
+}
+
+.logo-accent {
+  color: var(--color-accent);
+}
+
+.navbar-search {
+  flex: 1;
+  max-width: 460px;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+.main-content {
+  margin-top: var(--navbar-h);
+  min-height: calc(100vh - var(--navbar-h) - var(--player-h));
+  padding: var(--sp-xl) var(--content-pad);
+  padding-bottom: calc(var(--player-h) + var(--sp-xl));
+  max-width: var(--content-max);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: var(--navbar-h);
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+.h1 {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.h2 {
+  font-size: clamp(1.4rem, 2.5vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.h3 {
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.text-muted  { color: var(--color-text-muted); }
+.text-accent { color: var(--color-accent); }
+.text-sm     { font-size: 0.85rem; }
+.text-xs     { font-size: 0.75rem; }
+.fw-700      { font-weight: 700; }
+
+/* ============================================
+   LAYOUT UTILITIES
+   ============================================ */
+.section {
+  margin-bottom: var(--sp-2xl);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-lg);
+  gap: var(--sp-md);
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.2px;
+}
+
+.section-link {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  font-weight: 600;
+  transition: opacity var(--t-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.section-link:hover { opacity: 0.75; }
+
+/* Card Grids */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: var(--sp-lg);
+}
+
+.cards-row {
+  display: flex;
+  gap: var(--sp-md);
+  overflow-x: auto;
+  padding-bottom: var(--sp-sm);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cards-row::-webkit-scrollbar       { height: 3px; }
+.cards-row::-webkit-scrollbar-track { background: transparent; }
+.cards-row::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+
+/* Utilities */
+.hidden          { display: none !important; }
+.invisible       { visibility: hidden; opacity: 0; }
+.flex            { display: flex; }
+.flex-center     { display: flex; align-items: center; justify-content: center; }
+.flex-col        { flex-direction: column; }
+.items-center    { align-items: center; }
+.gap-sm          { gap: var(--sp-sm); }
+.gap-md          { gap: var(--sp-md); }
+.mt-md           { margin-top: var(--sp-md); }
+.w-full          { width: 100%; }
+
+/* Page Loader */
+.page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.page-loader-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+@media (max-width: 900px) {
+  .navbar-search { display: none; }
+  .navbar-actions { gap: 6px; }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: var(--sp-md) var(--sp-md);
+    padding-bottom: calc(var(--player-h) + 80px);
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: var(--sp-md);
+  }
+
+  .section { margin-bottom: var(--sp-xl); }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --navbar-h: 58px;
+    --player-h: 106px;
+  }
+
+  .navbar {
+    padding: 0 var(--sp-md);
+    gap: var(--sp-sm);
+  }
+
+  .logo-text { font-size: 1.15rem; }
+}
