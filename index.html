@@ -47,17 +47,11 @@
               </feMerge>
             </filter>
           </defs>
-          <!-- Outer rounded square bg -->
           <rect x="1" y="1" width="30" height="30" rx="9" fill="url(#logoGrad)" filter="url(#logoGlow)" />
-          <!-- Inner shine overlay -->
           <rect x="1" y="1" width="30" height="14" rx="9" fill="rgba(255,255,255,0.08)" />
-          <!-- Music note stem -->
           <rect x="18" y="9" width="2.5" height="10" rx="1.25" fill="white" />
-          <!-- Music note flag -->
           <path d="M20.5 9 Q26 10.5 24 14.5 Q22.5 12 20.5 12 Z" fill="white" opacity="0.9" />
-          <!-- Music note head -->
           <ellipse cx="16" cy="20" rx="3.5" ry="2.5" fill="white" transform="rotate(-12 16 20)" />
-          <!-- Waveform bars (left side) -->
           <rect x="8" y="13" width="2" height="7" rx="1" fill="white" opacity="0.9" />
           <rect x="11" y="11" width="2" height="11" rx="1" fill="white" opacity="0.75" />
         </svg>
@@ -95,6 +89,27 @@
           </svg>
           <span>Upload</span>
         </button>
+
+        <!-- Notification Bell -->
+        <div id="notif-wrap" class="notif-wrap hidden">
+          <button id="notif-btn" class="notif-btn" aria-label="Notifikasi" title="Notifikasi">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span id="notif-badge" class="notif-badge hidden">0</span>
+          </button>
+          <div id="notif-dropdown" class="notif-dropdown hidden" role="menu" aria-label="Daftar notifikasi">
+            <div class="notif-header">
+              <span class="notif-title">Notifikasi</span>
+              <button id="notif-mark-read" class="notif-mark-read">Tandai semua dibaca</button>
+            </div>
+            <div id="notif-list" class="notif-list">
+              <div class="notif-empty">Tidak ada notifikasi</div>
+            </div>
+          </div>
+        </div>
+
         <button id="auth-login-btn" class="btn btn--outline btn--sm">Login</button>
         <button id="auth-register-btn" class="btn btn--primary btn--sm">Daftar</button>
         <div id="user-avatar-wrap" class="user-avatar-wrap hidden">
@@ -121,7 +136,7 @@
     <div id="player-bar" class="player-bar hidden" role="region" aria-label="Music Player">
       <!-- Track Info -->
       <div class="player-track-info">
-        <div class="player-cover-wrap">
+        <div class="player-cover-wrap" id="player-cover-wrap-btn" title="Buka fullscreen player" style="cursor:pointer">
           <img id="player-cover" class="player-cover" src="assets/default-cover.png" alt="Cover lagu saat ini">
           <div class="player-cover-pulse"></div>
         </div>
@@ -133,6 +148,15 @@
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path
               d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
+        <!-- Expand to fullscreen -->
+        <button id="player-expand-btn" class="player-expand-btn" title="Tampilkan layar penuh" aria-label="Fullscreen player">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15,3 21,3 21,9"/>
+            <polyline points="9,21 3,21 3,15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3" y1="21" x2="10" y2="14"/>
           </svg>
         </button>
       </div>
@@ -209,6 +233,130 @@
     </div>
 
   </div><!-- /#app -->
+
+  <!-- ======================== FULLSCREEN PLAYER ======================== -->
+  <div id="fullscreen-player" class="fullscreen-player hidden" role="dialog" aria-label="Fullscreen Music Player" aria-modal="true">
+    <!-- Background blur layer -->
+    <div class="fs-bg" id="fs-bg"></div>
+    <div class="fs-overlay"></div>
+
+    <!-- Close button -->
+    <button id="fs-close-btn" class="fs-close-btn" aria-label="Tutup fullscreen">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="6,9 12,15 18,9"/>
+      </svg>
+    </button>
+
+    <!-- Main content -->
+    <div class="fs-content">
+      <!-- Left: Album art -->
+      <div class="fs-left">
+        <div class="fs-cover-wrap">
+          <img id="fs-cover" class="fs-cover" src="assets/default-cover.png" alt="Cover lagu fullscreen">
+          <div class="fs-cover-glow"></div>
+        </div>
+        <!-- Visualizer bars -->
+        <div class="fs-visualizer" id="fs-visualizer" aria-hidden="true">
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+          <span class="fs-vis-bar"></span>
+        </div>
+      </div>
+
+      <!-- Right: Controls -->
+      <div class="fs-right">
+        <div class="fs-track-info">
+          <div id="fs-title" class="fs-title">Pilih lagu untuk diputar</div>
+          <div id="fs-artist" class="fs-artist">—</div>
+          <div id="fs-album" class="fs-album"></div>
+        </div>
+
+        <div class="fs-actions">
+          <button id="fs-like-btn" class="fs-action-btn" aria-label="Like lagu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <button id="fs-comment-btn" class="fs-action-btn" aria-label="Komentar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="fs-progress-section">
+          <div class="fs-progress-bar" id="fs-progress-bar" role="slider" aria-label="Progress lagu" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="fs-progress-fill" id="fs-progress-fill"></div>
+            <div class="fs-progress-thumb" id="fs-progress-thumb"></div>
+          </div>
+          <div class="fs-time-row">
+            <span id="fs-current-time" class="fs-time">0:00</span>
+            <span id="fs-duration" class="fs-time">0:00</span>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="fs-controls">
+          <button id="fs-shuffle" class="fs-ctrl-btn" title="Shuffle" aria-label="Toggle Shuffle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/>
+              <polyline points="21,16 21,21 16,21"/><line x1="15" y1="15" x2="21" y2="21"/>
+            </svg>
+          </button>
+          <button id="fs-prev" class="fs-ctrl-btn fs-ctrl-btn--lg" title="Sebelumnya" aria-label="Lagu sebelumnya">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="19,20 9,12 19,4"/><rect x="5" y="4" width="2" height="16"/>
+            </svg>
+          </button>
+          <button id="fs-play" class="fs-play-btn" title="Play/Pause" aria-label="Play atau Pause">
+            <svg id="fs-play-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+            <svg id="fs-pause-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="hidden">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+          <button id="fs-next" class="fs-ctrl-btn fs-ctrl-btn--lg" title="Selanjutnya" aria-label="Lagu selanjutnya">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5,4 15,12 5,20"/><rect x="17" y="4" width="2" height="16"/>
+            </svg>
+          </button>
+          <button id="fs-loop" class="fs-ctrl-btn" title="Loop" aria-label="Toggle Loop">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="17,1 21,5 17,9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+              <polyline points="7,23 3,19 7,15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Volume -->
+        <div class="fs-volume-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+          <input type="range" id="fs-volume-slider" class="fs-volume-slider" min="0" max="100" value="80" aria-label="Volume">
+        </div>
+
+        <!-- Queue preview -->
+        <div class="fs-queue-section">
+          <div class="fs-queue-label">Antrian</div>
+          <div id="fs-queue-list" class="fs-queue-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ======================== AUTH MODAL ======================== -->
   <div id="auth-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
@@ -307,6 +455,73 @@
           </button>
         </form>
         <p class="auth-switch">Sudah punya akun? <button id="switch-to-login" class="link-btn">Masuk</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== EDIT PROFILE MODAL ======================== -->
+  <div id="edit-profile-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
+    <div class="modal-box modal-box--wide">
+      <button id="edit-profile-close" class="modal-close" aria-label="Tutup edit profil">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <h2 class="modal-title" id="edit-profile-title" style="margin-bottom:20px">✏️ Edit Profil</h2>
+
+      <!-- Banner Preview -->
+      <div class="edit-banner-wrap" id="edit-banner-wrap" title="Klik untuk ubah banner">
+        <img id="edit-banner-img" class="edit-banner-img" alt="Banner profil">
+        <div class="edit-banner-placeholder" id="edit-banner-placeholder">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21,15 16,10 5,21"/>
+          </svg>
+          <span>Ubah Banner</span>
+        </div>
+        <input type="file" id="edit-banner-input" accept="image/jpeg,image/png,image/webp" aria-label="Upload banner profil">
+      </div>
+
+      <!-- Avatar + fields -->
+      <div class="edit-profile-body">
+        <!-- Avatar -->
+        <div class="edit-avatar-section">
+          <div class="edit-avatar-wrap" id="edit-avatar-wrap" title="Klik untuk ubah foto profil">
+            <img id="edit-avatar-img" class="edit-avatar-img" src="assets/default-cover.png" alt="Foto profil">
+            <div class="edit-avatar-overlay">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <input type="file" id="edit-avatar-input" accept="image/jpeg,image/png,image/webp" aria-label="Upload foto profil">
+          </div>
+          <small class="text-muted">Klik foto untuk ubah</small>
+        </div>
+
+        <!-- Fields -->
+        <div class="edit-fields" style="flex:1">
+          <div class="form-group">
+            <label class="form-label" for="edit-username">Username</label>
+            <input type="text" id="edit-username" class="form-input" placeholder="Username kamu" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-bio">Bio</label>
+            <textarea id="edit-bio" class="form-input form-textarea" placeholder="Ceritakan sedikit tentang dirimu..." rows="3" maxlength="200"></textarea>
+            <small class="text-muted" id="bio-char-count">0 / 200</small>
+          </div>
+        </div>
+      </div>
+
+      <div id="edit-profile-error" class="form-error hidden" role="alert"></div>
+
+      <div style="display:flex;gap:12px;margin-top:20px">
+        <button id="edit-profile-save" class="btn btn--primary">
+          <span class="btn-text">Simpan Perubahan</span>
+          <div class="btn-spinner hidden" aria-hidden="true"></div>
+        </button>
+        <button id="edit-profile-cancel" class="btn btn--outline">Batal</button>
       </div>
     </div>
   </div>

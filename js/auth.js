@@ -8,6 +8,7 @@ class AuthManager {
     this.api         = api;
     this._storageKey = 'xeon_session_v1';
     this._listeners  = [];
+    this._session    = this.getSession(); // cached session reference
   }
 
   // ══════════════════════════════════════════
@@ -18,7 +19,9 @@ class AuthManager {
   getSession() {
     try {
       const raw = localStorage.getItem(this._storageKey);
-      return raw ? JSON.parse(raw) : null;
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed) this._session = parsed;
+      return parsed;
     } catch {
       return null;
     }
@@ -26,21 +29,27 @@ class AuthManager {
 
   /** Simpan sesi ke localStorage dan notifikasi listener */
   setSession(user, token) {
-    const session = {
+    this._session = {
       user,
       token,
       loginAt: new Date().toISOString(),
     };
+    this._save();
+    this._notify(this._session);
+  }
+
+  /** Simpan _session saat ini ke localStorage (untuk update parsial) */
+  _save() {
     try {
-      localStorage.setItem(this._storageKey, JSON.stringify(session));
+      localStorage.setItem(this._storageKey, JSON.stringify(this._session));
     } catch (e) {
       console.warn('[AuthManager] Failed to save session:', e);
     }
-    this._notify(session);
   }
 
   /** Hapus sesi dan notifikasi listener */
   clearSession() {
+    this._session = null;
     localStorage.removeItem(this._storageKey);
     this._notify(null);
   }
@@ -64,10 +73,6 @@ class AuthManager {
   //  AUTH ACTIONS
   // ══════════════════════════════════════════
 
-  /**
-   * Login dengan email + password
-   * @returns {{ success: boolean, user?: Object, message?: string }}
-   */
   async login(email, password) {
     try {
       const res = await this.api.login(email, password);
@@ -82,10 +87,6 @@ class AuthManager {
     }
   }
 
-  /**
-   * Registrasi user baru
-   * @returns {{ success: boolean, user?: Object, message?: string }}
-   */
   async register(username, email, password) {
     if (!username || !email || !password) {
       return { success: false, message: 'Semua field wajib diisi.' };
@@ -103,7 +104,6 @@ class AuthManager {
     }
   }
 
-  /** Logout: hapus sesi dan tampilkan toast */
   logout() {
     this.clearSession();
     Utils.showToast('Berhasil keluar 👋', 'info');
@@ -113,10 +113,6 @@ class AuthManager {
   //  LISTENER / OBSERVER PATTERN
   // ══════════════════════════════════════════
 
-  /**
-   * Daftarkan callback yang dipanggil saat sesi berubah
-   * @param {Function} fn - dipanggil dengan (session | null)
-   */
   onChange(fn) {
     this._listeners.push(fn);
   }

@@ -1,29 +1,23 @@
 /**
  * XeonMusic — App (class App)
- * Entry point, router, auth modal, comment modal, player controls
+ * Entry point, router, auth modal, comment modal, player controls, notifications
  * Developer: AlfandoXeon
- *
- * ⚠️  SETUP REQUIRED:
- *     Ganti GAS_URL di bawah ini dengan URL Google Apps Script
- *     setelah deploy backend (Fase 3).
  */
 
 // ════════════════════════════════════════════
 //  CONFIGURATION
 // ════════════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwyrcI_X6gcj1Bue3KGRLjR56FuW1sYSE57MoYNLRRVS1cZncdzbXyjtdvXlPX051eW/exec'
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzi3qSMN1hmsSfqqfNxlyrt9w8uznpsjjI9sTYqlNPvJ_34HXF3c_Eny42RZFKpqG4S/exec'
 
 // ════════════════════════════════════════════
 //  MAIN APP CLASS
 // ════════════════════════════════════════════
 class App {
   constructor() {
-    // Core services
     this.api = new XeonAPI(GAS_URL);
     this.auth = new AuthManager(this.api);
     this.player = new MusicPlayer(this.api, this.auth);
 
-    // Page factory map
     this.pages = {
       landing: () => new LandingPage(this),
       library: () => new LibraryPage(this),
@@ -33,6 +27,7 @@ class App {
 
     this.currentPage = null;
     this._commentSong = null;
+    this._notifPollId = null;
   }
 
   // ══════════════════════════════════════════
@@ -44,16 +39,18 @@ class App {
     this._setupAuthModal();
     this._setupCommentModal();
     this._setupPlayerControls();
+    this._setupNotifications();
     this.player.bindProgressBar();
 
-    // Listen for auth state changes → update navbar
+    // Setup edit profile modal events ONCE (modal lives in index.html)
+    this._sharedProfilePage = new ProfilePage(this);
+    this._sharedProfilePage._setupEditModalEvents();
+
     this.auth.onChange((session) => this._onAuthChange(session));
 
-    // Initial render based on URL hash
     this._handleRoute();
     window.addEventListener('hashchange', () => this._handleRoute());
 
-    // Global search bar in navbar
     document.getElementById('search-input')?.addEventListener(
       'input',
       Utils.debounce((e) => {
@@ -66,7 +63,7 @@ class App {
   }
 
   // ══════════════════════════════════════════
-  //  ROUTING (Hash-based SPA)
+  //  ROUTING
   // ══════════════════════════════════════════
 
   _handleRoute() {
@@ -75,23 +72,15 @@ class App {
     this.navigate(page === 'home' ? 'landing' : page, {}, false);
   }
 
-  /**
-   * Navigate to a page
-   * @param {string} pageName
-   * @param {Object} opts  - optional options passed to page.render()
-   * @param {boolean} pushHash - whether to update the URL hash
-   */
   navigate(pageName, opts = {}, pushHash = true) {
     const content = document.getElementById('main-content');
     if (!content) return;
 
-    // Validate page name
     if (!this.pages[pageName]) {
       console.warn('[App] Unknown page:', pageName);
       pageName = 'landing';
     }
 
-    // Update URL hash
     if (pushHash) {
       const hashName = pageName === 'landing' ? 'home' : pageName;
       const newHash = `#/${hashName}`;
@@ -100,14 +89,10 @@ class App {
       }
     }
 
-    // Update active nav buttons
     document.querySelectorAll('.nav-btn, .dropdown-item').forEach(b => b.classList.remove('active'));
     document.querySelectorAll(`[data-page="${pageName}"]`).forEach(b => b.classList.add('active'));
-
-    // Close any open dropdown
     document.getElementById('user-dropdown')?.classList.add('hidden');
 
-    // Render page
     const PageClass = this.pages[pageName];
     const page = PageClass();
     this.currentPage = page;
@@ -126,7 +111,6 @@ class App {
       console.error('[App] Sync render error:', e);
     }
 
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -144,7 +128,6 @@ class App {
     registerWrap?.classList.toggle('hidden', tab !== 'register');
     modal.classList.remove('hidden');
 
-    // Focus first visible input after animation
     setTimeout(() => {
       modal.querySelector('input:not([type="hidden"])')?.focus();
     }, 120);
@@ -157,19 +140,17 @@ class App {
   _setupAuthModal() {
     const modal = document.getElementById('auth-modal');
 
-    // Close button & backdrop click
     document.getElementById('auth-modal-close')?.addEventListener('click', () => this._hideAuth());
     modal?.addEventListener('click', (e) => { if (e.target === modal) this._hideAuth(); });
 
-    // Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this._hideAuth();
         document.getElementById('comment-modal')?.classList.add('hidden');
+        document.getElementById('edit-profile-modal')?.classList.add('hidden');
       }
     });
 
-    // Switch between login / register
     document.getElementById('switch-to-register')?.addEventListener('click', () => this.showAuth('register'));
     document.getElementById('switch-to-login')?.addEventListener('click', () => this.showAuth('login'));
     document.getElementById('continue-as-guest')?.addEventListener('click', () => {
@@ -247,6 +228,119 @@ class App {
   }
 
   // ══════════════════════════════════════════
+  //  EDIT PROFILE MODAL (global setup)
+  // ══════════════════════════════════════════
+
+  _setupEditProfileModal() {
+    // The modal is handled by ProfilePage, but we set up the close escape here
+    // (already handled in keydown above)
+  }
+
+  // ══════════════════════════════════════════
+  //  NOTIFICATIONS
+  // ══════════════════════════════════════════
+
+  _setupNotifications() {
+    const btn = document.getElementById('notif-btn');
+    const dropdown = document.getElementById('notif-dropdown');
+    const wrap = document.getElementById('notif-wrap');
+
+    // Toggle dropdown on bell click
+    btn?.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const isOpen = !dropdown.classList.contains('hidden');
+      dropdown.classList.toggle('hidden', isOpen);
+
+      if (!isOpen && this.auth.isLoggedIn()) {
+        await this._loadNotifications();
+        // Mark as read
+        const user = this.auth.getUser();
+        this.api.markNotificationsRead(user.id, this.auth.getToken()).catch(() => { });
+        document.getElementById('notif-badge')?.classList.add('hidden');
+      }
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#notif-wrap')) {
+        dropdown?.classList.add('hidden');
+      }
+    });
+
+    // Mark all read button
+    document.getElementById('notif-mark-read')?.addEventListener('click', async () => {
+      if (!this.auth.isLoggedIn()) return;
+      const user = this.auth.getUser();
+      await this.api.markNotificationsRead(user.id, this.auth.getToken()).catch(() => { });
+      document.getElementById('notif-badge')?.classList.add('hidden');
+      // Mark all as read visually
+      document.querySelectorAll('.notif-item--unread').forEach(el => el.classList.remove('notif-item--unread'));
+      Utils.showToast('Semua notifikasi ditandai dibaca', 'info', 1500);
+    });
+  }
+
+  async _loadNotifications() {
+    const list = document.getElementById('notif-list');
+    if (!list || !this.auth.isLoggedIn()) return;
+
+    list.innerHTML = '<div class="notif-empty">⏳ Memuat...</div>';
+
+    try {
+      const user = this.auth.getUser();
+      const res = await this.api.getNotifications(user.id, this.auth.getToken());
+      const notifs = res.data || [];
+
+      if (!notifs.length) {
+        list.innerHTML = '<div class="notif-empty">Tidak ada notifikasi 🔔</div>';
+        return;
+      }
+
+      list.innerHTML = notifs.map(n => this._notifHTML(n)).join('');
+    } catch (e) {
+      list.innerHTML = '<div class="notif-empty">Gagal memuat notifikasi</div>';
+    }
+  }
+
+  _notifHTML(n) {
+    const isUnread = !n.is_read || n.is_read === false || n.is_read === 'FALSE' || n.is_read === '';
+    const icons = {
+      like: '❤️',
+      comment: '💬',
+      follow: '👤',
+    };
+    const messages = {
+      like: `<b>${Utils.sanitize(n.actor_name)}</b> menyukai lagu <b>${Utils.sanitize(n.song_title)}</b>`,
+      comment: `<b>${Utils.sanitize(n.actor_name)}</b> berkomentar di <b>${Utils.sanitize(n.song_title)}</b>`,
+      follow: `<b>${Utils.sanitize(n.actor_name)}</b> mulai mengikutimu`,
+    };
+
+    return `
+      <div class="notif-item ${isUnread ? 'notif-item--unread' : ''}">
+        <div class="notif-icon">${icons[n.type] || '🔔'}</div>
+        <div class="notif-body">
+          <div class="notif-msg">${messages[n.type] || Utils.sanitize(n.actor_name)}</div>
+          <div class="notif-time">${Utils.formatDate(n.created_at)}</div>
+        </div>
+        ${isUnread ? '<div class="notif-dot"></div>' : ''}
+      </div>
+    `;
+  }
+
+  async _pollNotificationCount() {
+    if (!this.auth.isLoggedIn()) return;
+    try {
+      const user = this.auth.getUser();
+      const res = await this.api.getNotifications(user.id, this.auth.getToken());
+      const count = res.unreadCount || 0;
+      const badge = document.getElementById('notif-badge');
+      if (badge) {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.classList.toggle('hidden', count === 0);
+      }
+    } catch { }
+  }
+
+  // ══════════════════════════════════════════
   //  COMMENT MODAL
   // ══════════════════════════════════════════
 
@@ -255,7 +349,6 @@ class App {
     const modal = document.getElementById('comment-modal');
     if (!modal) return;
 
-    // Song info header
     const infoEl = document.getElementById('comment-song-info');
     if (infoEl) {
       infoEl.innerHTML = `
@@ -270,7 +363,6 @@ class App {
       `;
     }
 
-    // Show or hide comment form
     const commentForm = document.getElementById('comment-form');
     const loginPrompt = document.getElementById('comment-login-prompt');
     const commentInput = document.getElementById('comment-input');
@@ -321,13 +413,11 @@ class App {
     document.getElementById('comment-modal-close')?.addEventListener('click', () => modal?.classList.add('hidden'));
     modal?.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
 
-    // Comment login redirect
     document.getElementById('comment-login-btn')?.addEventListener('click', () => {
       modal?.classList.add('hidden');
       this.showAuth('login');
     });
 
-    // Comment submit
     document.getElementById('comment-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!this._commentSong) return;
@@ -363,18 +453,15 @@ class App {
   // ══════════════════════════════════════════
 
   _setupNavbar() {
-    // Brand → home
     document.getElementById('nav-home-logo')?.addEventListener('click', () => this.navigate('landing'));
     document.getElementById('nav-home-logo')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') this.navigate('landing');
     });
 
-    // All [data-page] buttons
     document.querySelectorAll('[data-page]').forEach(btn => {
       btn.addEventListener('click', () => this.navigate(btn.dataset.page));
     });
 
-    // Avatar dropdown toggle
     const dropdown = document.getElementById('user-dropdown');
     document.getElementById('user-avatar')?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -382,18 +469,16 @@ class App {
     });
     document.addEventListener('click', () => dropdown?.classList.add('hidden'));
 
-    // Logout
     document.getElementById('logout-btn')?.addEventListener('click', () => {
       this.auth.logout();
       dropdown?.classList.add('hidden');
+      this._stopNotifPoll();
       this.navigate('landing');
     });
 
-    // Login / Register buttons in navbar
     document.getElementById('auth-login-btn')?.addEventListener('click', () => this.showAuth('login'));
     document.getElementById('auth-register-btn')?.addEventListener('click', () => this.showAuth('register'));
 
-    // Apply current auth state to navbar
     this._onAuthChange(this.auth.getSession());
   }
 
@@ -403,6 +488,7 @@ class App {
     const registerBtn = document.getElementById('auth-register-btn');
     const avatarWrap = document.getElementById('user-avatar-wrap');
     const uploadBtn = document.getElementById('nav-upload-btn');
+    const notifWrap = document.getElementById('notif-wrap');
     const avatar = document.getElementById('user-avatar');
     const usernameEl = document.getElementById('dropdown-username');
 
@@ -410,6 +496,7 @@ class App {
       loginBtn?.classList.add('hidden');
       registerBtn?.classList.add('hidden');
       avatarWrap?.classList.remove('hidden');
+      notifWrap?.classList.remove('hidden');
       uploadBtn?.classList.remove('nav-btn--hidden');
 
       if (avatar) {
@@ -417,11 +504,30 @@ class App {
         avatar.onerror = () => { avatar.src = 'assets/default-cover.png'; };
       }
       if (usernameEl) usernameEl.textContent = user.username;
+
+      // Start polling notifications
+      this._startNotifPoll();
     } else {
       loginBtn?.classList.remove('hidden');
       registerBtn?.classList.remove('hidden');
       avatarWrap?.classList.add('hidden');
+      notifWrap?.classList.add('hidden');
       uploadBtn?.classList.add('nav-btn--hidden');
+      this._stopNotifPoll();
+    }
+  }
+
+  _startNotifPoll() {
+    this._stopNotifPoll();
+    // Poll immediately, then every 60 seconds
+    this._pollNotificationCount();
+    this._notifPollId = setInterval(() => this._pollNotificationCount(), 60000);
+  }
+
+  _stopNotifPoll() {
+    if (this._notifPollId) {
+      clearInterval(this._notifPollId);
+      this._notifPollId = null;
     }
   }
 
@@ -452,10 +558,40 @@ class App {
       try {
         const res = await this.api.likeSong(song.id, user.id, this.auth.getToken());
         btn.classList.toggle('liked', !!res.liked);
+
+        // Sync fullscreen like button
+        const fsBtn = document.getElementById('fs-like-btn');
+        fsBtn?.classList.toggle('liked', !!res.liked);
+
         Utils.showToast(res.liked ? '❤️ Disukai!' : 'Dihapus dari favorit', 'success');
       } catch {
         Utils.showToast('Gagal. Coba lagi.', 'error');
       }
+    });
+
+    // Fullscreen like button
+    document.getElementById('fs-like-btn')?.addEventListener('click', async () => {
+      if (!this.auth.isLoggedIn()) { this.showAuth('login'); return; }
+      const song = this.player.currentSong();
+      if (!song) return;
+      const btn = document.getElementById('fs-like-btn');
+      const user = this.auth.getUser();
+      try {
+        const res = await this.api.likeSong(song.id, user.id, this.auth.getToken());
+        btn.classList.toggle('liked', !!res.liked);
+        document.getElementById('player-like-btn')?.classList.toggle('liked', !!res.liked);
+        Utils.showToast(res.liked ? '❤️ Disukai!' : 'Dihapus dari favorit', 'success');
+      } catch {
+        Utils.showToast('Gagal. Coba lagi.', 'error');
+      }
+    });
+
+    // Fullscreen comment button
+    document.getElementById('fs-comment-btn')?.addEventListener('click', () => {
+      const song = this.player.currentSong();
+      if (!song) return;
+      this.player.closeFullscreen();
+      this.openComments(song);
     });
   }
 }

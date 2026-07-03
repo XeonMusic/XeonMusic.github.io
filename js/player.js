@@ -1,6 +1,7 @@
 /**
  * XeonMusic — MusicPlayer (class MusicPlayer)
  * Kontrol audio: play, pause, queue, seek, volume, shuffle, loop
+ * + Full-Screen Player (Spotify-like)
  * Developer: AlfandoXeon
  */
 class MusicPlayer {
@@ -19,11 +20,15 @@ class MusicPlayer {
     this.shuffle      = false;
     this.loop         = false;
 
+    // Fullscreen state
+    this._fsOpen = false;
+
     // Event listeners map
     this._listeners = {};
 
     this._bindAudioEvents();
     this._setInitialVolume(0.8);
+    this._bindFullscreenEvents();
   }
 
   // ══════════════════════════════════════════
@@ -43,30 +48,22 @@ class MusicPlayer {
 
   _setInitialVolume(vol) {
     this.audio.volume = vol;
-    const slider = document.getElementById('volume-slider');
-    if (slider) slider.value = vol * 100;
+    const slider   = document.getElementById('volume-slider');
+    const fsSlider = document.getElementById('fs-volume-slider');
+    if (slider)   slider.value   = vol * 100;
+    if (fsSlider) fsSlider.value = vol * 100;
   }
 
   // ══════════════════════════════════════════
   //  PLAYBACK CONTROLS
   // ══════════════════════════════════════════
 
-  /**
-   * Atur queue lagu dan mulai dari index tertentu
-   * @param {Array} songs - Array of song objects
-   * @param {number} startIndex - Index lagu pertama
-   */
   setQueue(songs, startIndex = 0) {
     this.queue        = [...songs];
     this.currentIndex = Math.max(0, Math.min(startIndex, songs.length - 1));
     this._playCurrent();
   }
 
-  /**
-   * Putar satu lagu (opsional: ganti seluruh queue)
-   * @param {Object} song
-   * @param {Array|null} queue - Jika diisi, ganti queue dan cari posisi song
-   */
   play(song, queue = null) {
     if (queue && queue.length > 0) {
       const idx = queue.findIndex(s => s.id === song.id);
@@ -86,13 +83,10 @@ class MusicPlayer {
     this.isPlaying ? this.pause() : this.resume();
   }
 
-  /** Lagu selanjutnya (dengan shuffle support) */
   next() {
     if (this.queue.length === 0) return;
-
     if (this.shuffle) {
-      let idx;
-      let attempts = 0;
+      let idx, attempts = 0;
       do {
         idx = Math.floor(Math.random() * this.queue.length);
         attempts++;
@@ -101,11 +95,9 @@ class MusicPlayer {
     } else {
       this.currentIndex = (this.currentIndex + 1) % this.queue.length;
     }
-
     this._playCurrent();
   }
 
-  /** Lagu sebelumnya — jika > 3 detik, restart; jika tidak, benar-benar mundur */
   prev() {
     if (this.audio.currentTime > 3) {
       this.audio.currentTime = 0;
@@ -116,38 +108,34 @@ class MusicPlayer {
     this._playCurrent();
   }
 
-  /**
-   * Seek ke posisi tertentu berdasarkan persentase (0–1)
-   * @param {number} pct - 0.0 to 1.0
-   */
   seek(pct) {
     if (this.audio.duration && isFinite(this.audio.duration)) {
       this.audio.currentTime = Utils.clamp(pct, 0, 1) * this.audio.duration;
     }
   }
 
-  /**
-   * Atur volume (0–100)
-   * @param {number} vol
-   */
   setVolume(vol) {
     this.audio.volume = Utils.clamp(vol / 100, 0, 1);
+    // Sync fs slider
+    const fsSlider = document.getElementById('fs-volume-slider');
+    if (fsSlider) fsSlider.value = vol;
   }
 
   toggleShuffle() {
     this.shuffle = !this.shuffle;
     document.getElementById('player-shuffle')?.classList.toggle('active', this.shuffle);
+    document.getElementById('fs-shuffle')?.classList.toggle('active', this.shuffle);
     Utils.showToast(this.shuffle ? '🔀 Shuffle aktif' : 'Shuffle nonaktif', 'info', 1800);
   }
 
   toggleLoop() {
-    this.loop          = !this.loop;
-    this.audio.loop    = this.loop;
+    this.loop       = !this.loop;
+    this.audio.loop = this.loop;
     document.getElementById('player-loop')?.classList.toggle('active', this.loop);
+    document.getElementById('fs-loop')?.classList.toggle('active', this.loop);
     Utils.showToast(this.loop ? '🔁 Loop aktif' : 'Loop nonaktif', 'info', 1800);
   }
 
-  /** Kembalikan objek song yang sedang diputar */
   currentSong() {
     return this.queue[this.currentIndex] ?? null;
   }
@@ -169,12 +157,17 @@ class MusicPlayer {
     this._showPlayerBar();
     this._emit('songChange', song);
 
-    // Increment play count (fire and forget)
+    // Update fullscreen if open
+    if (this._fsOpen) {
+      this._updateFsTrackUI(song);
+      this._updateFsQueue();
+    }
+
     this.api.incrementPlay(song.id).catch(() => {});
   }
 
   // ══════════════════════════════════════════
-  //  UI UPDATES
+  //  UI UPDATES — PLAYER BAR
   // ══════════════════════════════════════════
 
   _updateTrackUI(song) {
@@ -195,6 +188,7 @@ class MusicPlayer {
   }
 
   _updatePlayUI() {
+    // Player bar
     const playIcon  = document.getElementById('play-icon');
     const pauseIcon = document.getElementById('pause-icon');
     const bar       = document.getElementById('player-bar');
@@ -203,12 +197,24 @@ class MusicPlayer {
     pauseIcon?.classList.toggle('hidden', !this.isPlaying);
     bar?.classList.toggle('playing', this.isPlaying);
 
+    // Fullscreen
+    const fsPlayIcon  = document.getElementById('fs-play-icon');
+    const fsPauseIcon = document.getElementById('fs-pause-icon');
+    fsPlayIcon?.classList.toggle('hidden', this.isPlaying);
+    fsPauseIcon?.classList.toggle('hidden', !this.isPlaying);
+
+    // Visualizer animation
+    const vis    = document.querySelector('.visualizer');
+    const fsVis  = document.getElementById('fs-visualizer');
+    const active = this.isPlaying;
+    vis?.classList.toggle('playing',    active);
+    fsVis?.classList.toggle('playing',  active);
+
     this._emit('playStateChange', this.isPlaying);
   }
 
   _showPlayerBar() {
-    const bar = document.getElementById('player-bar');
-    bar?.classList.remove('hidden');
+    document.getElementById('player-bar')?.classList.remove('hidden');
   }
 
   _onTimeUpdate() {
@@ -216,6 +222,7 @@ class MusicPlayer {
     const dur = this.audio.duration || 0;
     const pct = dur ? (cur / dur) * 100 : 0;
 
+    // Player bar
     const fill  = document.getElementById('player-progress-fill');
     const thumb = document.getElementById('player-progress-thumb');
     const curEl = document.getElementById('player-current-time');
@@ -225,15 +232,27 @@ class MusicPlayer {
     if (thumb) thumb.style.left  = `calc(${pct}% - 6px)`;
     if (curEl) curEl.textContent = Utils.formatDuration(cur);
     if (bar)   bar.setAttribute('aria-valuenow', Math.round(pct));
+
+    // Fullscreen
+    const fsFill  = document.getElementById('fs-progress-fill');
+    const fsThumb = document.getElementById('fs-progress-thumb');
+    const fsCurEl = document.getElementById('fs-current-time');
+    const fsBar   = document.getElementById('fs-progress-bar');
+
+    if (fsFill)  fsFill.style.width  = `${pct}%`;
+    if (fsThumb) fsThumb.style.left  = `calc(${pct}% - 8px)`;
+    if (fsCurEl) fsCurEl.textContent = Utils.formatDuration(cur);
+    if (fsBar)   fsBar.setAttribute('aria-valuenow', Math.round(pct));
   }
 
   _onMetaLoaded() {
-    const durEl = document.getElementById('player-duration');
-    if (durEl) durEl.textContent = Utils.formatDuration(this.audio.duration);
+    const dur = this.audio.duration;
+    document.getElementById('player-duration').textContent = Utils.formatDuration(dur);
+    document.getElementById('fs-duration').textContent     = Utils.formatDuration(dur);
   }
 
   _onEnded() {
-    if (this.loop) return; // audio.loop handles repeat
+    if (this.loop) return;
     this._emit('songEnded', this.currentSong());
     this.next();
   }
@@ -245,7 +264,161 @@ class MusicPlayer {
   }
 
   // ══════════════════════════════════════════
-  //  PROGRESS BAR DRAG INTERACTION
+  //  FULLSCREEN PLAYER
+  // ══════════════════════════════════════════
+
+  openFullscreen() {
+    const fs = document.getElementById('fullscreen-player');
+    if (!fs) return;
+
+    this._fsOpen = true;
+    fs.classList.remove('hidden');
+    requestAnimationFrame(() => fs.classList.add('fs-visible'));
+
+    const song = this.currentSong();
+    if (song) {
+      this._updateFsTrackUI(song);
+      this._updateFsQueue();
+    }
+
+    // Sync play state
+    this._updatePlayUI();
+
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeFullscreen() {
+    const fs = document.getElementById('fullscreen-player');
+    if (!fs) return;
+
+    this._fsOpen = false;
+    fs.classList.remove('fs-visible');
+    setTimeout(() => fs.classList.add('hidden'), 350);
+    document.body.style.overflow = '';
+  }
+
+  _updateFsTrackUI(song) {
+    const cover  = document.getElementById('fs-cover');
+    const title  = document.getElementById('fs-title');
+    const artist = document.getElementById('fs-artist');
+    const album  = document.getElementById('fs-album');
+    const bg     = document.getElementById('fs-bg');
+
+    const coverUrl = Utils.getCoverUrl(song.cover_drive_id, 600);
+    if (cover)  {
+      cover.src     = coverUrl;
+      cover.onerror = () => { cover.src = 'assets/default-cover.png'; };
+    }
+    if (bg) {
+      bg.style.backgroundImage = `url(${coverUrl})`;
+    }
+    if (title)  title.textContent  = song.title  || 'Unknown';
+    if (artist) artist.textContent = song.artist || 'Unknown';
+    if (album)  album.textContent  = song.album  || '';
+  }
+
+  _updateFsQueue() {
+    const list = document.getElementById('fs-queue-list');
+    if (!list || !this.queue.length) return;
+
+    list.innerHTML = this.queue.slice(0, 8).map((s, i) => `
+      <div class="fs-queue-item ${i === this.currentIndex ? 'fs-queue-item--active' : ''}" data-idx="${i}">
+        <img class="fs-queue-cover" src="${Utils.getCoverUrl(s.cover_drive_id, 60)}" 
+             alt="${Utils.sanitize(s.title)}" onerror="this.src='assets/default-cover.png'">
+        <div class="fs-queue-info">
+          <div class="fs-queue-title">${Utils.sanitize(s.title)}</div>
+          <div class="fs-queue-artist">${Utils.sanitize(s.artist)}</div>
+        </div>
+        ${i === this.currentIndex ? '<div class="fs-queue-playing-dot"></div>' : ''}
+      </div>
+    `).join('');
+
+    list.querySelectorAll('.fs-queue-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const idx = parseInt(item.dataset.idx);
+        this.currentIndex = idx;
+        this._playCurrent();
+      });
+    });
+  }
+
+  _bindFullscreenEvents() {
+    // Open fullscreen on cover click
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#player-cover-wrap-btn') || e.target.closest('#player-expand-btn')) {
+        if (this.currentSong()) this.openFullscreen();
+      }
+    });
+
+    // Close button
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#fs-close-btn')) this.closeFullscreen();
+    });
+
+    // Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this._fsOpen) this.closeFullscreen();
+    });
+
+    // FS controls
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#fs-play'))    this.togglePlay();
+      if (e.target.closest('#fs-prev'))    this.prev();
+      if (e.target.closest('#fs-next'))    this.next();
+      if (e.target.closest('#fs-shuffle')) this.toggleShuffle();
+      if (e.target.closest('#fs-loop'))    this.toggleLoop();
+    });
+
+    // FS volume
+    document.addEventListener('input', (e) => {
+      if (e.target.id === 'fs-volume-slider') {
+        this.setVolume(Number(e.target.value));
+        const barSlider = document.getElementById('volume-slider');
+        if (barSlider) barSlider.value = e.target.value;
+      }
+    });
+
+    // FS progress bar
+    this._bindFsProgressBar();
+  }
+
+  _bindFsProgressBar() {
+    const getBar = () => document.getElementById('fs-progress-bar');
+    let isDragging = false;
+
+    const getPct = (e) => {
+      const bar  = getBar();
+      if (!bar) return 0;
+      const rect = bar.getBoundingClientRect();
+      const x    = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      return Utils.clamp(x / rect.width, 0, 1);
+    };
+
+    document.addEventListener('mousedown', (e) => {
+      if (e.target.closest('#fs-progress-bar')) {
+        isDragging = true;
+        this.seek(getPct(e));
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) this.seek(getPct(e));
+    });
+
+    document.addEventListener('mouseup', () => { isDragging = false; });
+
+    document.addEventListener('touchstart', (e) => {
+      if (e.target.closest('#fs-progress-bar')) this.seek(getPct(e));
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      if (e.target.closest('#fs-progress-bar')) this.seek(getPct(e));
+    }, { passive: true });
+  }
+
+  // ══════════════════════════════════════════
+  //  PROGRESS BAR (Player Bar)
   // ══════════════════════════════════════════
 
   bindProgressBar() {
