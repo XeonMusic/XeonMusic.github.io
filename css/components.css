@@ -1898,6 +1898,22 @@ select.form-input option { background: var(--color-surface); }
   overflow-y: auto;
 }
 
+/* Custom Scrollbar for Queue */
+.fs-queue-list::-webkit-scrollbar {
+  width: 5px;
+}
+.fs-queue-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+.fs-queue-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.fs-queue-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .fs-queue-item {
   display: flex;
   align-items: center;
