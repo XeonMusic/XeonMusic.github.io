@@ -130,7 +130,7 @@ function triggerGreeting() {
     // Start background music
     startMusic();
 
-    const text = 'Hai, Rosita. Aku bikin sesuatu khusus buat kamu.';
+    const text = 'Hai, Sengg! Aku punya sesuatu buat bikin kamu semangat :)';
     let   i    = 0;
 
     function typeChar() {
