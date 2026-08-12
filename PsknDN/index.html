@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Love — Don't Be Angry</title>
+    <meta name="description" content="Sebuah web yang dibuat dengan penuh perasaan, untuk kamu yang tak tahu betapa berartinya kamu.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ======================== AUDIO ======================== -->
+<audio id="bgMusic" loop>
+    <source src="asset/musikRomantis/music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- ======================== TOP NAVBAR ======================== -->
+<nav class="top-navbar" id="topNavbar" aria-label="Header">
+    <div class="navbar-inner">
+        <span class="navbar-brand">
+            <i class="bi bi-heart-fill" aria-hidden="true"></i>
+            For My Love
+        </span>
+        <span class="navbar-tagline">Don&rsquo;t Be Angry</span>
+    </div>
+</nav>
+
+<!-- ======================== SLIDE DOTS NAV ======================== -->
+<nav class="slide-dots" id="slideDots" aria-label="Navigasi slide">
+    <button class="dot active" onclick="goToSlide(0)" aria-label="Slide 1" title="Opening"></button>
+    <button class="dot" onclick="goToSlide(1)" aria-label="Slide 2" title="Salam"></button>
+    <button class="dot" onclick="goToSlide(2)" aria-label="Slide 3" title="Kita"></button>
+    <button class="dot" onclick="goToSlide(3)" aria-label="Slide 4" title="Kenangan"></button>
+    <button class="dot" onclick="goToSlide(4)" aria-label="Slide 5" title="Tentang Kamu"></button>
+</nav>
+
+<!-- ======================== SLIDES WRAPPER ======================== -->
+<div class="slides-wrapper" id="slidesWrapper">
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  SLIDE 1 — OPENING                   ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <section class="slide active" id="slide-0" aria-label="Opening">
+        <div class="slide-content opening-slide">
+
+            <!-- Bintang-bintang -->
+            <div class="stars" id="starsContainer" aria-hidden="true"></div>
+
+            <!-- Vignette overlay -->
+            <div class="vignette" aria-hidden="true"></div>
+
+            <div class="opening-inner">
+                <p class="from-label">Dari Danu Untuk Rosita Tercinta</p>
+                <div class="date-text">07.05.2026</div>
+                <h1 class="our-story-title">OUR STORY</h1>
+                <div class="divider-line" aria-hidden="true"></div>
+                <p class="our-story-quote">
+                    Some stories are written.<br>
+                    <em>Ours was simply lived.</em>
+                </p>
+                <div class="enter-arrow" aria-hidden="true">
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <button class="btn-enter" id="btnEnter" onclick="startJourney()">
+                    Ayo Mulai Sayang&hellip;
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  SLIDE 2 — PERSONAL GREETING         ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <section class="slide" id="slide-1" aria-label="Personal Greeting">
+        <div class="slide-content greeting-slide">
+
+            <div class="greeting-glow" aria-hidden="true"></div>
+
+            <div class="greeting-inner">
+                <p class="slide-number-label">01 &mdash; Untuk Kamu</p>
+
+                <h2 class="typing-container">
+                    <span id="typingText"></span><span class="cursor-blink" aria-hidden="true">|</span>
+                </h2>
+
+                <p class="greeting-subtext" id="greetingSubtext">
+                    Aku tahu kamu sedang marah. Dan mungkin kamu punya alasan yang kuat.<br>
+                    Tapi izinkan aku sebentar saja &mdash; untuk mengingatkanmu<br>
+                    betapa berharganya kamu bagiku.
+                </p>
+
+                <button class="btn-next" id="greetingBtn" onclick="nextSlide()">
+                    Lanjut <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  SLIDE 3 — "KITA" / TIMELINE         ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <section class="slide" id="slide-2" aria-label="Our Story Timeline">
+        <div class="slide-content timeline-slide">
+            <div class="container py-4">
+
+                <header class="section-header">
+                    <p class="section-label">02 &mdash; Kita</p>
+                    <h2 class="section-title">The Beginning</h2>
+                    <p class="section-subtitle">Bagaimana semuanya bermula&hellip;</p>
+                </header>
+
+                <div class="timeline" id="timelineEl">
+
+                    <!-- Milestone 1 -->
+                    <div class="timeline-item" id="tl-0">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-card">
+                            <span class="timeline-year">2022</span>
+                            <h3 class="timeline-title">Awal yang Tak Terduga</h3>
+                            <p class="timeline-text">
+                                Awal masuk kuliah, tanpa sadar aku melihat ke arah seseorang yang begitu cantik&hellip;
+                                dalam hati aku berbisik pelan,
+                                <em>&ldquo;Iss&hellip; siapa tuh, cantik banget.&rdquo;</em>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Milestone 2 -->
+                    <div class="timeline-item right" id="tl-1">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-card">
+                            <span class="timeline-year">Setelahnya</span>
+                            <h3 class="timeline-title">Strategi Diam-diam</h3>
+                            <p class="timeline-text">
+                                Di kelas, aku selalu mencari tempat duduk di belakangmu.
+                                Bukan kebetulan. Itu caraku &mdash; pengecut tapi jujur &mdash;
+                                supaya bisa melihatmu tanpa ketahuan bahwa aku sudah jatuh hati.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Milestone 3 -->
+                    <div class="timeline-item" id="tl-2">
+                        <div class="timeline-dot timeline-dot-now"></div>
+                        <div class="timeline-card timeline-card-now">
+                            <span class="timeline-year">Sekarang</span>
+                            <h3 class="timeline-title">Dan Kini Kamu Ada di Sini</h3>
+                            <p class="timeline-text">
+                                Kamu yang dulu aku lirik dari jauh, kini jadi yang paling aku sayangi.
+                                Itu bukan kebetulan &mdash; itu jawaban dari doa yang bahkan belum aku ucapkan.
+                            </p>
+                        </div>
+                    </div>
+
+                </div><!-- end .timeline -->
+
+                <div class="text-center mt-5 pb-4">
+                    <button class="btn-next" onclick="nextSlide()">
+                        Lanjut <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  SLIDE 4 — MEMORY GALLERY            ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <section class="slide" id="slide-3" aria-label="Memory Gallery">
+        <div class="slide-content gallery-slide">
+            <div class="container py-4">
+
+                <header class="section-header">
+                    <p class="section-label">03 &mdash; Kenangan</p>
+                    <h2 class="section-title">Memory Gallery</h2>
+                    <p class="section-subtitle">Satu foto, seribu perasaan yang tak terucapkan.</p>
+                </header>
+
+                <div class="gallery-wrapper">
+                    <!-- Polaroid — klik untuk buka modal -->
+                    <button
+                        class="polaroid"
+                        id="polaroidCard"
+                        data-bs-toggle="modal"
+                        data-bs-target="#photoModal"
+                        aria-label="Buka foto kenangan"
+                    >
+                        <div class="polaroid-img-wrap">
+                            <img src="asset/foto/foto1.jpeg" alt="Kenangan bersama Rosita" class="polaroid-img">
+                        </div>
+                        <div class="polaroid-caption">
+                            <i class="bi bi-heart-fill" aria-hidden="true"></i>
+                            <span>Klik untuk lihat</span>
+                        </div>
+                    </button>
+
+                    <!-- Decorative film strip lines -->
+                    <div class="film-strip left" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="film-strip right" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5 pb-4">
+                    <button class="btn-next" onclick="nextSlide()">
+                        Lanjut <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║  SLIDE 5 — HAL-HAL KECIL TENTANG KAMU║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <section class="slide" id="slide-4" aria-label="Hal-hal Kecil Tentang Kamu">
+        <div class="slide-content small-things-slide">
+            <div class="container py-4">
+
+                <header class="section-header">
+                    <p class="section-label">04 &mdash; Tentang Kamu</p>
+                    <h2 class="section-title">Hal-hal Kecil<br>Tentang Kamu</h2>
+                    <p class="section-subtitle">Yang mungkin kamu sendiri tidak sadar aku perhatikan.</p>
+                </header>
+
+                <!-- Cards -->
+                <div class="row g-4 justify-content-center" id="thingsRow">
+
+                    <div class="col-12 col-md-6 col-lg-5">
+                        <div class="thing-card" id="card-0">
+                            <div class="thing-icon">
+                                <i class="bi bi-shield-heart" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="thing-title">Preman Kecil Berhati Lembut</h4>
+                            <p class="thing-text">
+                                Katanya dulu preman waktu TK. Tapi yang aku lihat sekarang
+                                adalah seseorang yang lembut, hangat, dan tanpa sadar selalu
+                                bikin aku ingin ada di dekatnya.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-5">
+                        <div class="thing-card" id="card-1">
+                            <div class="thing-icon">
+                                <i class="bi bi-music-note-beamed" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="thing-title">Joget yang Bikin Aku Senyum</h4>
+                            <p class="thing-text">
+                                Kamu suka joget prik &mdash; dan jujur? Aku suka nonton kamu joget.
+                                Ada sesuatu yang <em>genuine</em> dari cara kamu bergerak:
+                                bebas, ringan, tanpa pura-pura.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-5">
+                        <div class="thing-card" id="card-2">
+                            <div class="thing-icon">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="thing-title">Aku Selalu Memperhatikan</h4>
+                            <p class="thing-text">
+                                Aku duduk di belakangmu di kelas &mdash; bukan karena tidak ada tempat lain.
+                                Tapi dari situ, aku bisa melihatmu dengan bebas.
+                                Dan setiap hari itu selalu jadi bagian terbaik dari kelasku.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-5">
+                        <div class="thing-card" id="card-3">
+                            <div class="thing-icon">
+                                <i class="bi bi-stars" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="thing-title">Yang Tak Kamu Sadari</h4>
+                            <p class="thing-text">
+                                Setiap kali kamu tertawa, setiap ekspresi kecilmu, setiap cara kamu berbicara &mdash;
+                                aku perhatikan semuanya. Bukan karena iseng.
+                                Tapi karena kamu memang berharga untuk diperhatikan.
+                            </p>
+                        </div>
+                    </div>
+
+                </div><!-- end row -->
+
+                <!-- Closing Message -->
+                <div class="closing-message" id="closingMsg">
+                    <div class="closing-line" aria-hidden="true"></div>
+                    <p class="closing-from">&mdash; Dari Danu, dengan sepenuh hati &mdash;</p>
+                    <h3 class="closing-title">Jangan Marah, Ya.</h3>
+                    <p class="closing-text">
+                        Aku tidak selalu bisa mengungkapkan dengan kata-kata.<br>
+                        Tapi percayalah &mdash; kamu adalah alasan aku mau berusaha lebih.
+                        Maafkan aku jika ada yang salah.
+                        Dan terima kasih sudah menjadi bagian yang paling aku syukuri.
+                    </p>
+                    <p class="closing-signature">
+                        Dengan cinta,<br>
+                        <span>Danu</span>
+                    </p>
+                </div>
+
+                <div class="text-center pb-5">
+                    <button class="btn-restart" onclick="restartSlides()">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        Ulangi dari Awal
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</div><!-- end .slides-wrapper -->
+
+<!-- ======================== MODAL FOTO ======================== -->
+<div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-custom">
+            <div class="modal-header border-0 pb-0">
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Tutup"
+                ></button>
+            </div>
+            <div class="modal-body text-center px-4 pb-4">
+                <img
+                    src="asset/foto/foto1.jpeg"
+                    alt="Kenangan bersama"
+                    class="modal-photo"
+                    id="photoModalLabel"
+                >
+                <p class="modal-photo-caption mt-4">
+                    <i class="bi bi-quote" aria-hidden="true"></i>
+                    Ada momen-momen yang tidak perlu diberi label.<br>
+                    Cukup dirasakan, dan disimpan dalam hati.
+                    <i class="bi bi-quote flip" aria-hidden="true"></i>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="js/main.js"></script>
+</body>
+</html>

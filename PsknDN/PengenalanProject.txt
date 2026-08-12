@@ -1,0 +1,177 @@
+Jadi begini.. 
+Saya adalah Danu
+
+saya ingin membuat web ini dengan tujuan, untuk membujuk pacar saya yang sedang marah..
+
+Nama Web = For My love ( dont be angry )
+buat seperti ppt slide (gunakan js, jangan membuat halaman html baru )
+flow web =
+
+1. Opening — “Sebelum kamu masuk…”
+
+Layar gelap/minimalis
+Musik opsional
+Satu kalimat pendek
+Tombol: “Ayo Mulai Sayang...”
+Setelah diklik → transisi cinematic
+
+2. Personal Greeting
+
+Nama pasangan muncul
+Contoh konsep: “Hai, [Nama]. Aku bikin sesuatu khusus buat kamu.”
+Animasi typing
+Tombol “Lanjut”
+ ( nanti di bagian ini musik mulai terdengar sampe flow terakhir )
+
+untuk musik ada di folder asset/musikRomantis/music.mp3
+
+
+3. “Kita”
+
+Tanggal pertama kenal
+Bagaimana awalnya kalian dekat
+Bisa dibuat seperti timeline horizontal/vertical
+Setiap milestone punya foto + cerita pendek
+
+4. Memory Gallery
+
+Foto/video kalian
+Bukan sekadar grid foto
+Klik foto → muncul cerita/momen di balik foto
+Bisa ada efek polaroid, film strip, atau scrapbook
+
+untuk foto ada di folder asset/foto/foto1.jpeg
+cuma 1 aja sih gapapap
+
+5. “Hal-hal kecil tentang kamu”
+
+Hal yang kamu suka dari dia
+Kebiasaan kecilnya
+Hal random yang menurutmu lucu
+Hal yang mungkin dia sendiri nggak sadar kamu perhatikan
+
+
+
+
+
+
+
+tambahan..
+jadi danu adalah teman saya yang meminta saya untuk membuatkan web romantis nya tsb...
+ada bebrapa hal yang mungkin saya tahu tentang pacarnya
+berikut
+
+nama pacarnya = rosita
+sedikit chat kami berdua ( aku (dev) dan danu)
+
+saya memberi beberapa pertanyaan
+
+1. Tanggal pertama kenal
+2. Bagaimana awalnya kalian dekat
+3. Hal yang kamu suka dari dia Kebiasaan kecilnya
+4. Hal random yang menurutmu lucu
+5. Hal yang mungkin dia sendiri nggak sadar kamu perhatikan
+
+jawaban dari danu
+1. 2022
+2. Awal masuk kuliah karna covid kan, trus masuk iss siapa tu cantik banget 
+3. ⁠Dia Preman saat TK
+4. ⁠Suka joget prik tapi aku suka 
+5. ⁠Saat kelas aku slalu di belakang dia supaya aku bisa melihat dia dri belakang biar gak terlalu notis kalau aku lihat
+
+
+
+
+design
+
+1. Palet warna
+
+Gunakan warna dasar gelap:
+
+Elemen	Warna
+Background	#0D0A0B
+Surface	#171113
+Primary	#C96B7C
+Accent	#F3B6C2
+Text utama	#F8EEF0
+Text sekunder	#A99A9E
+Gold accent	#D8B27C
+
+
+2. Font
+
+Saya sarankan kombinasi serif + sans-serif.
+
+Heading
+
+Cormorant Garamond
+
+Cocok untuk:
+
+Our Story
+For You
+The Beginning
+Forever, Maybe.
+
+Karakter serif-nya memberikan kesan intimate, elegant, romantic.
+
+Body
+
+Inter
+
+Untuk:
+
+deskripsi
+tanggal
+button
+navigation
+caption
+
+buat design yang tidak terlalu ramai, tapi tetap responsive
+
+
+                    07.05.2026
+
+                  OUR STORY
+
+          Some stories are written.
+          Ours was simply lived.
+
+                 ↓
+             ENTER OUR STORY
+
+
+gunakan saja bootstrap
+
+Bootstrap 5
+├── Container
+├── Row / Col
+├── Navbar
+├── Modal
+├── Button
+├── Carousel
+├── Offcanvas
+└── Utilities
+
+
+custom css
+Typography
+Colors
+Glass effect
+Hover
+Animation
+Timeline
+Memory cards
+Hero
+Cursor effects
+
+
+
+kurang lebih garis besarnya adalah Dark Cinematic Romance
+
+
+
+
+serta tambahkan beberapa kata kata yang romantis, dan sesuai konteks supaya web lebih beirisi..
+saya serakhakn semuanya ke anda wahai 
+jangan lupa, gunakan perasaan hati

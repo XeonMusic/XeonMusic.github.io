@@ -1,0 +1,1244 @@
+/* ============================================================
+   style.css — Dark Cinematic Romance
+   "For My Love (Don't Be Angry)"
+   ============================================================ */
+
+/* ---- CSS Variables ---- */
+:root {
+    --bg:       #0D0A0B;
+    --surface:  #171113;
+    --primary:  #C96B7C;
+    --accent:   #F3B6C2;
+    --text:     #F8EEF0;
+    --text-sec: #A99A9E;
+    --gold:     #D8B27C;
+    --glass:    rgba(23, 17, 19, 0.55);
+    --border:   rgba(201, 107, 124, 0.2);
+    --gold-border: rgba(216, 178, 124, 0.3);
+}
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Sembunyikan cursor default hanya untuk perangkat mouse */
+@media (pointer: fine) {
+    html, body { cursor: none; }
+}
+
+h1, h2, h3 {
+    font-family: 'Cormorant Garamond', serif;
+}
+
+/* ============================================================
+   CUSTOM CURSOR — hanya tampil di perangkat mouse
+   ============================================================ */
+.custom-cursor,
+.cursor-ring {
+    display: none; /* default: hidden, aktif via media query di bawah */
+}
+
+@media (pointer: fine) {
+    .custom-cursor {
+        display: block;
+        width: 10px;
+        height: 10px;
+        background: var(--primary);
+        border-radius: 50%;
+        position: fixed;
+        top: 0; left: 0;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        mix-blend-mode: screen;
+        will-change: left, top;
+    }
+
+    .cursor-ring {
+        display: block;
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(201, 107, 124, 0.6);
+        border-radius: 50%;
+        position: fixed;
+        top: 0; left: 0;
+        pointer-events: none;
+        z-index: 9998;
+        transform: translate(-50%, -50%);
+        will-change: left, top;
+        transition: width 0.2s ease, height 0.2s ease;
+    }
+
+    body:has(button:hover) .cursor-ring,
+    body:has(a:hover) .cursor-ring {
+        width: 48px;
+        height: 48px;
+        border-color: var(--accent);
+    }
+}
+
+/* ============================================================
+   TOP NAVBAR — Transparent
+   ============================================================ */
+.top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 150;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(
+        to bottom,
+        rgba(13, 10, 11, 0.80) 0%,
+        rgba(13, 10, 11, 0.30) 70%,
+        transparent 100%
+    );
+    padding: 0 2rem;
+    pointer-events: none; /* tidak memblok klik ke konten di bawahnya */
+    transition: background 0.4s ease;
+}
+
+.navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.navbar-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    opacity: 0.85;
+}
+
+.navbar-brand .bi-heart-fill {
+    color: var(--primary);
+    font-size: 0.72rem;
+    animation: heartbeat 2.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1);    opacity: 0.8; }
+    20%       { transform: scale(1.25); opacity: 1; }
+    40%       { transform: scale(1);    opacity: 0.8; }
+    60%       { transform: scale(1.15); opacity: 1; }
+}
+
+.navbar-tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-sec);
+    opacity: 0.55;
+}
+
+/* ============================================================
+   SLIDE DOTS NAVIGATION
+   ============================================================ */
+.slide-dots {
+    position: fixed;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+}
+
+.slide-dots.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--text-sec);
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.35s ease;
+    display: block;
+}
+
+.dot.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: scale(1.5);
+    box-shadow: 0 0 8px rgba(201, 107, 124, 0.4);
+}
+
+.dot:hover:not(.active) {
+    border-color: var(--accent);
+    background: rgba(243, 182, 194, 0.2);
+}
+
+/* ============================================================
+   SLIDES CORE
+   ============================================================ */
+/* Wrapper tetap full screen — navbar sudah di luar wrapper */
+.slides-wrapper {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.slide {
+    position: absolute;
+    /* === KUNCI FIX ===
+       Mulai di bawah navbar (58px), bukan dari top:0.
+       Area scroll tidak pernah menyentuh navbar — tidak peduli seberapa jauh
+       user scroll ke atas. Ini solusi definitif untuk konten terpotong. */
+    top: 58px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-start;   /* konten mulai dari atas, bukan center vertikal */
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s linear 1s;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.slide::-webkit-scrollbar { width: 4px; }
+.slide::-webkit-scrollbar-track { background: transparent; }
+.slide::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.slide.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s linear 0s;
+}
+
+/* Opening slide dikecualikan: konten center vertikal di sisa layar */
+#slide-0 {
+    align-items: center;
+}
+
+.slide-content {
+    width: 100%;
+    min-height: calc(100vh - 58px); /* tinggi = layar dikurangi navbar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 2rem;             /* padding normal, tidak perlu kompensasi navbar */
+    position: relative;
+}
+
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+
+/* Section header (Slides 3-5) */
+.section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+    font-weight: 400;
+}
+
+.section-title {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+}
+
+.section-subtitle {
+    color: var(--text-sec);
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+    font-weight: 300;
+}
+
+/* Shared Buttons */
+.btn-next {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.9rem 2.4rem;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.btn-next:hover {
+    background: rgba(201, 107, 124, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateX(5px);
+}
+
+.btn-restart {
+    background: transparent;
+    border: 1px solid rgba(243, 182, 194, 0.25);
+    color: var(--text-sec);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.8rem;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.btn-restart:hover {
+    border-color: var(--text-sec);
+    color: var(--text);
+}
+
+/* ============================================================
+   SLIDE 1 — OPENING
+   ============================================================ */
+.opening-slide {
+    background: var(--bg);
+    flex-direction: column;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Stars */
+.stars {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.08; transform: scale(1); }
+    50%       { opacity: 0.75; transform: scale(1.5); }
+}
+
+/* Vignette */
+.vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+        transparent 30%,
+        rgba(13, 10, 11, 0.7) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Content */
+.opening-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+    animation: fadeInUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(32px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.from-label {
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0;
+    opacity: 0.9;
+}
+
+.date-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--text-sec);
+    letter-spacing: 0.32em;
+    font-weight: 300;
+}
+
+.our-story-title {
+    font-size: clamp(3.8rem, 11vw, 7.5rem);
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: 0.22em;
+    line-height: 1;
+    margin: 0;
+}
+
+.divider-line {
+    width: 48px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    margin: 0 auto;
+}
+
+.our-story-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--text-sec);
+    font-weight: 300;
+    line-height: 1.9;
+    margin: 0;
+}
+
+.our-story-quote em {
+    color: var(--accent);
+    font-style: italic;
+}
+
+.enter-arrow {
+    color: var(--primary);
+    font-size: 1.2rem;
+    animation: bounceDown 2s ease-in-out infinite;
+}
+
+@keyframes bounceDown {
+    0%, 100% { transform: translateY(0);   opacity: 0.6; }
+    50%       { transform: translateY(10px); opacity: 1; }
+}
+
+.btn-enter {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 1rem 2.8rem;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.btn-enter::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(201, 107, 124, 0.15), transparent);
+    transition: left 0.7s ease;
+}
+
+.btn-enter:hover::before { left: 100%; }
+.btn-enter:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 32px rgba(201, 107, 124, 0.18);
+}
+
+/* ============================================================
+   SLIDE 2 — PERSONAL GREETING
+   ============================================================ */
+.greeting-slide {
+    background: radial-gradient(ellipse at 50% 40%, #1c0f14 0%, var(--bg) 65%);
+    text-align: center;
+    flex-direction: column;
+}
+
+.greeting-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(201, 107, 124, 0.06) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: pulse 5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50%       { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+.greeting-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.8rem;
+    padding: 2rem;
+}
+
+.slide-number-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0;
+}
+
+.typing-container {
+    font-size: clamp(1.7rem, 5vw, 2.8rem);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.4;
+    min-height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.cursor-blink {
+    color: var(--primary);
+    animation: blink 0.95s step-end infinite;
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+.greeting-subtext {
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    color: var(--text-sec);
+    line-height: 2;
+    max-width: 540px;
+    font-weight: 300;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.greeting-subtext.visible {
+    opacity: 1;
+}
+
+#greetingBtn {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+#greetingBtn.visible {
+    opacity: 1;
+}
+
+/* ============================================================
+   SLIDE 3 — TIMELINE
+   ============================================================ */
+.timeline-slide {
+    background: var(--bg);
+    align-items: flex-start;
+}
+
+.timeline {
+    position: relative;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 1rem 0 2rem;
+}
+
+/* Vertical line */
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom,
+        transparent,
+        var(--border) 15%,
+        var(--primary) 50%,
+        var(--border) 85%,
+        transparent
+    );
+    transform: translateX(-50%);
+}
+
+.timeline-item {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: calc(50% + 2.8rem);
+    margin-bottom: 3rem;
+    position: relative;
+    opacity: 0;
+    transform: translateX(-28px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.timeline-item.right {
+    justify-content: flex-start;
+    padding-right: 0;
+    padding-left: calc(50% + 2.8rem);
+    transform: translateX(28px);
+}
+
+.timeline-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 50%;
+    top: 1.3rem;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--accent);
+    transform: translateX(-50%);
+    z-index: 2;
+    transition: box-shadow 0.3s ease;
+}
+
+.timeline-item:hover .timeline-dot {
+    box-shadow: 0 0 14px rgba(201, 107, 124, 0.5);
+}
+
+.timeline-dot-now {
+    background: var(--gold);
+    border-color: #f0d5a0;
+    box-shadow: 0 0 14px rgba(216, 178, 124, 0.4);
+}
+
+.timeline-card {
+    background: var(--glass);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.5rem 1.75rem;
+    max-width: 330px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timeline-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 48px rgba(201, 107, 124, 0.1);
+}
+
+.timeline-card-now {
+    border-color: var(--gold-border);
+}
+
+.timeline-year {
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--primary);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-card-now .timeline-year {
+    color: var(--gold);
+}
+
+.timeline-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+}
+
+.timeline-text {
+    font-size: 0.875rem;
+    color: var(--text-sec);
+    line-height: 1.85;
+    margin: 0;
+}
+
+.timeline-text em {
+    color: var(--accent);
+    font-style: italic;
+}
+
+/* ============================================================
+   SLIDE 4 — MEMORY GALLERY
+   ============================================================ */
+.gallery-slide {
+    background: radial-gradient(ellipse at 50% 0%, #1c0e14 0%, var(--bg) 55%);
+    align-items: flex-start;
+}
+
+.gallery-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 0;
+    position: relative;
+}
+
+/* Polaroid */
+.polaroid {
+    background: #1e1417;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1rem 1rem 3.2rem;
+    transform: rotate(-2.5deg);
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.4),
+        0 20px 60px rgba(0,0,0,0.35),
+        0 0 0 0.5px rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.45s ease;
+    max-width: 300px;
+    width: 100%;
+    animation: polaroidFloat 7s ease-in-out infinite;
+    display: block; /* button reset */
+    text-align: left;
+}
+
+@keyframes polaroidFloat {
+    0%, 100% { transform: rotate(-2.5deg) translateY(0); }
+    50%       { transform: rotate(-1.5deg) translateY(-12px); }
+}
+
+.polaroid:hover {
+    transform: rotate(0deg) translateY(-14px) scale(1.03) !important;
+    box-shadow:
+        0 8px 30px rgba(0,0,0,0.5),
+        0 30px 80px rgba(201, 107, 124, 0.18);
+    animation: none;
+}
+
+.polaroid-img-wrap {
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.polaroid-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(8%) contrast(106%);
+    transition: transform 0.6s ease, filter 0.4s ease;
+    display: block;
+}
+
+.polaroid:hover .polaroid-img {
+    transform: scale(1.06);
+    filter: sepia(4%) contrast(108%);
+}
+
+.polaroid-caption {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-sec);
+    margin-top: 1.2rem;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.polaroid-caption .bi-heart-fill {
+    color: var(--primary);
+    font-size: 0.8rem;
+}
+
+/* Film strip decorative */
+.film-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0.25;
+}
+
+.film-strip span {
+    width: 10px;
+    height: 14px;
+    border: 1px solid var(--text-sec);
+    border-radius: 2px;
+    display: block;
+}
+
+/* Modal */
+.modal-custom {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.modal-photo {
+    max-width: 100%;
+    max-height: 68vh;
+    object-fit: contain;
+    border-radius: 2px;
+}
+
+.modal-photo-caption {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    color: var(--text-sec);
+    font-style: italic;
+    line-height: 1.9;
+    padding: 0 1rem;
+}
+
+.modal-photo-caption .bi-quote {
+    color: var(--primary);
+    font-size: 1.2rem;
+    vertical-align: middle;
+}
+
+.modal-photo-caption .flip {
+    display: inline-block;
+    transform: rotate(180deg);
+}
+
+/* ============================================================
+   SLIDE 5 — HAL-HAL KECIL
+   ============================================================ */
+.small-things-slide {
+    background: var(--bg);
+    align-items: flex-start;
+}
+
+/* Thing cards */
+.thing-card {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2rem;
+    height: 100%;
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.thing-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.thing-card:hover {
+    border-color: rgba(201, 107, 124, 0.35);
+    box-shadow: 0 14px 48px rgba(201, 107, 124, 0.08);
+    transform: translateY(-5px) !important;
+}
+
+.thing-icon {
+    width: 46px;
+    height: 46px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    color: var(--primary);
+    font-size: 1.25rem;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.thing-card:hover .thing-icon {
+    background: rgba(201, 107, 124, 0.1);
+    color: var(--accent);
+    border-color: rgba(201, 107, 124, 0.4);
+}
+
+.thing-title {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.65rem;
+}
+
+.thing-text {
+    font-size: 0.875rem;
+    color: var(--text-sec);
+    line-height: 1.9;
+    margin: 0;
+}
+
+.thing-text em {
+    color: var(--accent);
+    font-style: italic;
+}
+
+/* Closing message */
+.closing-message {
+    text-align: center;
+    margin: 5rem auto 3rem;
+    max-width: 560px;
+    padding: 0 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s;
+}
+
+.closing-message.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.closing-line {
+    width: 56px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    margin: 0 auto 2rem;
+}
+
+.closing-from {
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.2rem;
+}
+
+.closing-title {
+    font-size: clamp(2rem, 5.5vw, 3.5rem);
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+}
+
+.closing-text {
+    font-size: 0.95rem;
+    color: var(--text-sec);
+    line-height: 2;
+    margin-bottom: 2rem;
+}
+
+.closing-signature {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    color: var(--text-sec);
+    font-style: italic;
+    line-height: 2;
+    margin: 0;
+}
+
+.closing-signature span {
+    font-size: 2rem;
+    color: var(--accent);
+    font-weight: 300;
+    display: block;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* ---- Tablet & Mobile (≤ 768px) ---- */
+@media (max-width: 768px) {
+
+    /* Nav dots lebih kecil & lebih dekat ke tepi */
+    .slide-dots {
+        right: 10px;
+        gap: 10px;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    /* Navbar mengecil di mobile */
+    .top-navbar {
+        height: 50px;
+        padding: 0 1.2rem;
+    }
+
+    .navbar-tagline {
+        display: none; /* sembunyikan tagline, hemat ruang */
+    }
+
+    .navbar-brand {
+        font-size: 0.88rem;
+    }
+
+    /* Slide mulai di bawah navbar 50px (mobile) */
+    .slide {
+        top: 50px;
+    }
+
+    #slide-0 {
+        align-items: center; /* opening slide tetap center */
+    }
+
+    /* slide-content min-height menyesuaikan */
+    .slide-content {
+        min-height: calc(100vh - 50px);
+        padding: 1.5rem 1rem;
+        align-items: flex-start;
+    }
+
+    /* Opening slide */
+    .opening-inner {
+        gap: 0.85rem;
+        padding: 0 1rem;
+    }
+
+    .from-label {
+        font-size: 0.6rem;
+        letter-spacing: 0.18em;
+    }
+
+    .our-story-quote {
+        font-size: 0.95rem;
+    }
+
+    .btn-enter {
+        padding: 0.85rem 2rem;
+        font-size: 0.7rem;
+    }
+
+    /* Greeting slide */
+    .greeting-inner {
+        gap: 1.4rem;
+        padding: 1.5rem 0.5rem;
+    }
+
+    .greeting-subtext {
+        font-size: 0.85rem;
+        line-height: 1.85;
+    }
+
+    /* Section headers */
+    .section-header {
+        margin-bottom: 2rem;
+    }
+
+    .section-subtitle {
+        font-size: 0.82rem;
+    }
+
+    /* Timeline → single column kiri */
+    .timeline::before {
+        left: 1.5rem;
+        background: linear-gradient(to bottom,
+            transparent,
+            var(--border) 10%,
+            var(--primary) 50%,
+            var(--border) 90%,
+            transparent
+        );
+    }
+
+    .timeline-item,
+    .timeline-item.right {
+        padding-right: 0;
+        padding-left: 4rem;
+        justify-content: flex-start;
+        transform: translateX(-20px);
+    }
+
+    .timeline-dot {
+        left: 1.5rem;
+    }
+
+    .timeline-card {
+        max-width: 100%;
+    }
+
+    .timeline-title {
+        font-size: 1.05rem;
+    }
+
+    /* Gallery: polaroid lebih kecil */
+    .gallery-wrapper {
+        gap: 0;
+    }
+
+    .polaroid {
+        max-width: 230px;
+        padding: 0.75rem 0.75rem 2.8rem;
+    }
+
+    .polaroid-img-wrap {
+        aspect-ratio: 1 / 1;
+    }
+
+    /* Sembunyikan dekorasi film strip */
+    .film-strip {
+        display: none;
+    }
+
+    /* Cards hal-hal kecil */
+    .thing-card {
+        padding: 1.5rem;
+    }
+
+    .thing-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .thing-title {
+        font-size: 1rem;
+    }
+
+    .thing-text {
+        font-size: 0.82rem;
+    }
+
+    /* Closing message */
+    .closing-message {
+        margin: 3.5rem auto 2rem;
+    }
+
+    .closing-text {
+        font-size: 0.88rem;
+    }
+}
+
+/* ---- Small mobile (≤ 480px) ---- */
+@media (max-width: 480px) {
+
+    .our-story-title {
+        letter-spacing: 0.1em;
+    }
+
+    /* Timeline kolom kiri lebih sempit */
+    .timeline-item,
+    .timeline-item.right {
+        padding-left: 3rem;
+    }
+
+    .timeline::before {
+        left: 1rem;
+    }
+
+    .timeline-dot {
+        left: 1rem;
+    }
+
+    .timeline-card {
+        padding: 1.1rem 1.25rem;
+    }
+
+    /* Polaroid lebih kecil lagi */
+    .polaroid {
+        max-width: 200px;
+        padding: 0.6rem 0.6rem 2.5rem;
+    }
+
+    /* Section title lebih compact */
+    .section-title {
+        font-size: clamp(2rem, 9vw, 2.8rem);
+    }
+
+    /* Closing lebih ringkas */
+    .closing-title {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+    }
+
+    .closing-signature span {
+        font-size: 1.6rem;
+    }
+
+    /* Nav dots disembunyikan pada layar sangat kecil */
+    .slide-dots {
+        right: 6px;
+    }
+
+    .dot {
+        width: 5px;
+        height: 5px;
+    }
+}
+
+/* ---- Landscape mobile ---- */
+@media (max-width: 768px) and (orientation: landscape) {
+    .opening-inner {
+        gap: 0.55rem;
+    }
+
+    .our-story-title {
+        font-size: clamp(2.5rem, 8vw, 4rem);
+    }
+
+    .our-story-quote {
+        font-size: 0.85rem;
+    }
+
+    .greeting-inner {
+        gap: 1rem;
+    }
+
+    .section-header {
+        margin-bottom: 1.2rem;
+    }
+}
